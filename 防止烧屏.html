@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>防烧屏渐变动画</title>
+    <style>
+        /* 重置默认样式，确保全屏无空隙 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 确保html和body占满整个屏幕 */
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* 隐藏滚动条 */
+        }
+
+        /* 动画容器 - 全屏覆盖 */
+        .gradient-container {
+            width: 100%;
+            height: 100%;
+            /* 核心：多色渐变+持续动画 */
+            background: linear-gradient(
+                45deg,
+                #ff0000, #ff9900, #ffff00, 
+                #00ff00, #0099ff, #6633ff, 
+                #cc33ff, #ff0099
+            );
+            /* 渐变背景尺寸放大，让动画有移动的效果 */
+            background-size: 800% 800%;
+            /* 动画属性：名称、时长、线性、无限循环 */
+            animation: gradientAnimation 20s linear infinite;
+        }
+
+        /* 定义渐变动画关键帧 */
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-container"></div>
+</body>
+</html>

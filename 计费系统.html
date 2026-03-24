@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>智趣计时系统 - 订单详情备注功能</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f4fa 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 头部卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .config-card {
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e2b3c, #2c3e50);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1.25rem;
+            border-left: 5px solid #f97316;
+            padding-left: 1rem;
+            letter-spacing: -0.2px;
+        }
+
+        /* 三列配置布局 */
+        .config-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1.2rem;
+            background: #fefefe;
+            transition: 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+
+        .price-hint {
+            font-size: 0.7rem;
+            color: #f97316;
+            margin-top: 0.3rem;
+            margin-left: 0.5rem;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f1f5f9;
+            color: #1e293b;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(100deg, #f97316, #fdba74);
+            color: white;
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(100deg, #ea580c, #f97316);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(249, 115, 22, 0.35);
+        }
+
+        .btn-outline {
+            border: 1.5px solid #cbd5e1;
+            background: white;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #f97316;
+        }
+
+        .btn-info {
+            background: #e6f7ff;
+            color: #0c4a6e;
+            border: 1px solid #bae6fd;
+        }
+        .btn-info:hover {
+            background: #bae6fd;
+        }
+
+        /* 订单表格区域 */
+        .order-table-wrapper {
+            overflow-x: auto;
+            border-radius: 1.5rem;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-table th {
+            background: #f8fafc;
+            padding: 1rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .order-table td {
+            padding: 1rem 0.8rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        .order-table tr:hover {
+            background: #fef9f0;
+        }
+
+        .remaining-time {
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 1rem;
+            color: #2c3e50;
+        }
+
+        .time-urgent {
+            color: #e11d48;
+            background: #ffe4e6;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            display: inline-block;
+            font-size: 0.8rem;
+        }
+
+        .badge-service {
+            background: #eef2ff;
+            color: #1e40af;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1.5rem;
+            transition: 0.1s;
+            font-weight: 500;
+        }
+        .detail-btn {
+            background: #eef2ff;
+            color: #2563eb;
+        }
+        .detail-btn:hover {
+            background: #dbeafe;
+        }
+        .delete-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 2.5rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #5b6e8c;
+        }
+
+        /* 模态框通用 */
+        .modal-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .modal-mask.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 2rem;
+            padding: 1.8rem;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.3);
+            transform: scale(0.95);
+            transition: 0.2s;
+        }
+
+        .modal-mask.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-container h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .modal-field {
+            margin-bottom: 1rem;
+        }
+        .modal-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #334155;
+        }
+        .modal-field input, .modal-field textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+        .modal-field textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .info-line {
+            background: #f8fafc;
+            padding: 0.5rem 0.8rem;
+            border-radius: 1rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.85rem;
+            color: #1e293b;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        hr {
+            margin: 1rem 0;
+            border-color: #eef2ff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 配置卡片：店铺名称 / 服务 / 价格费率 -->
+    <div class="card config-card">
+        <div class="section-title">🏪 服务配置</div>
+        <div class="config-grid">
+            <div class="input-group">
+                <label>📛 店铺名称</label>
+                <input type="text" id="shopNameInput" placeholder="例：星牌台球厅" value="星牌台球厅">
+            </div>
+            <div class="input-group">
+                <label>🎯 服务项目</label>
+                <input type="text" id="serviceInput" placeholder="例：台球厅 / 网吧" value="台球厅">
+            </div>
+            <div class="input-group">
+                <label>💰 计价费率</label>
+                <input type="text" id="rateInput" placeholder="格式: 20/小时  或  5/分钟" value="30/小时">
+                <div class="price-hint">✔️ 示例: "25/小时" 或 "1.5/分钟"</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要操作区 + 添加订单按钮 -->
+    <div class="card" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+            <span style="font-weight: 600; background: #fef3c7; padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.85rem;">
+                📐 当前费率预览: <span id="ratePreview">未设置</span>
+            </span>
+        </div>
+        <button class="btn btn-primary" id="openOrderModalBtn">➕ 添加订单</button>
+    </div>
+
+    <!-- 订单列表展示 -->
+    <div class="card" style="padding: 0 0 1rem 0; overflow: hidden;">
+        <div style="padding: 1rem 2rem 0 2rem;" class="section-title">📋 进行中订单 · 计时列表</div>
+        <div class="order-table-wrapper">
+            <table class="order-table" id="orderTable">
+                <thead>
+                    <tr>
+                        <th>订单编号</th><th>店铺/服务</th><th>预付金额(元)</th><th>费率快照</th><th>剩余时间</th><th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody">
+                    <tr class="empty-row"><td colspan="6">暂无订单，点击上方按钮添加订单 ✨</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer>⏱️ 系统自动计时，订单到期自动弹窗提醒（含备注描述），确定后自动消失</footer>
+</div>
+
+<!-- 添加订单模态框 -->
+<div id="orderModal" class="modal-mask">
+    <div class="modal-container">
+        <h3>📝 添加计时订单</h3>
+        <div class="modal-field">
+            <label>🔢 订单编号 *</label>
+            <input type="text" id="modalOrderId" placeholder="例如: A001 或 手机尾号" autocomplete="off">
+        </div>
+        <div class="modal-field">
+            <label>💰 顾客支付金额 (元) *</label>
+            <input type="number" id="modalAmount" placeholder="输入金额 如 100" step="0.01">
+        </div>
+        <div class="modal-field">
+            <label>📝 备注描述 (可选)</label>
+            <textarea id="modalDescription" placeholder="例如：3号桌的小伙子 / 现金支付 / 会员折扣等" rows="2"></textarea>
+            <div class="price-hint" style="margin-top: 0.2rem;">到点提醒时会显示此描述</div>
+        </div>
+        <div class="price-hint" id="modalCalcHint">💰 根据当前费率，预计可获得时长: --</div>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" id="closeModalBtn">取消</button>
+            <button class="btn btn-primary" id="confirmOrderBtn">✔️ 确定添加</button>
+        </div>
+    </div>
+</div>
+
+<!-- 订单详情模态框 (包含描述编辑) -->
+<div id="detailModal" class="modal-mask">
+    <div class="modal-container" style="max-width: 550px;">
+        <h3>📄 订单详情</h3>
+        <div id="detailContent">
+            <!-- 动态填充订单信息 -->
+        </div>
+        <div class="modal-field">
+            <label>📝 备注描述 (可修改)</label>
+            <textarea id="detailDescription" rows="3" placeholder="添加备注信息，例如顾客特征、现金支付等"></textarea>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" id="closeDetailModalBtn">关闭</button>
+            <button class="btn btn-primary" id="saveDetailBtn">💾 保存描述</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 全局数据 ----------
+    let orders = [];          // 订单对象数组
+    let timerInterval = null; // 计时器句柄
+    let currentDetailOrderId = null; // 当前打开的详情订单id
+
+    // DOM 元素
+    const shopNameInput = document.getElementById('shopNameInput');
+    const serviceInput = document.getElementById('serviceInput');
+    const rateInput = document.getElementById('rateInput');
+    const ratePreviewSpan = document.getElementById('ratePreview');
+    const orderTableBody = document.getElementById('orderTableBody');
+    const openModalBtn = document.getElementById('openOrderModalBtn');
+    const orderModal = document.getElementById('orderModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+    const modalOrderId = document.getElementById('modalOrderId');
+    const modalAmount = document.getElementById('modalAmount');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalCalcHint = document.getElementById('modalCalcHint');
+
+    // 详情模态框
+    const detailModal = document.getElementById('detailModal');
+    const detailDescription = document.getElementById('detailDescription');
+    const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
+    const saveDetailBtn = document.getElementById('saveDetailBtn');
+    const detailContent = document.getElementById('detailContent');
+
+    // ---------- 辅助函数: 解析价格费率 (格式: 数值/单位) ----------
+    function parseRate(rateStr) {
+        if (!rateStr) return null;
+        let raw = rateStr.trim();
+        const regex = /^([\d.]+)\s*[\/\/]\s*(小时|分钟|时|分)$/i;
+        const match = raw.match(regex);
+        if (!match) {
+            const altRegex = /([\d.]+)\s*[\/\/]?\s*(小时|分钟|时|分)/i;
+            const altMatch = raw.match(altRegex);
+            if (altMatch) {
+                let price = parseFloat(altMatch[1]);
+                let unit = altMatch[2];
+                if (isNaN(price)) return null;
+                if (unit === '小时' || unit === '时') return { unitPrice: price, unitType: 'hour' };
+                if (unit === '分钟' || unit === '分') return { unitPrice: price, unitType: 'minute' };
+            }
+            return null;
+        }
+        let price = parseFloat(match[1]);
+        let unit = match[2];
+        if (isNaN(price) || price <= 0) return null;
+        if (unit === '小时' || unit === '时') return { unitPrice: price, unitType: 'hour' };
+        if (unit === '分钟' || unit === '分') return { unitPrice: price, unitType: 'minute' };
+        return null;
+    }
+
+    // 根据费率+预付金额计算毫秒时长
+    function calcDurationMs(rateObj, paidAmount) {
+        if (!rateObj || paidAmount <= 0) return 0;
+        let minutes = 0;
+        if (rateObj.unitType === 'hour') {
+            let hours = paidAmount / rateObj.unitPrice;
+            minutes = hours * 60;
+        } else {
+            let mins = paidAmount / rateObj.unitPrice;
+            minutes = mins;
+        }
+        if (minutes <= 0) return 0;
+        return minutes * 60 * 1000;
+    }
+
+    // 获取当前配置的快照
+    function getCurrentConfig() {
+        let shop = shopNameInput.value.trim();
+        if (shop === "") shop = "未命名店铺";
+        let service = serviceInput.value.trim();
+        if (service === "") service = "未填服务";
+        let rateRaw = rateInput.value.trim();
+        let rateObj = parseRate(rateRaw);
+        return { shop, service, rateRaw, rateObj };
+    }
+
+    // 更新费率预览
+    function updateRatePreview() {
+        const config = getCurrentConfig();
+        if (config.rateObj) {
+            let unitText = config.rateObj.unitType === 'hour' ? '小时' : '分钟';
+            ratePreviewSpan.innerText = `${config.rateObj.unitPrice}元/${unitText}`;
+        } else {
+            ratePreviewSpan.innerText = '格式错误, 示例:20/小时';
+        }
+        if (orderModal.classList.contains('active')) updateModalHint();
+    }
+
+    function updateModalHint() {
+        const amount = parseFloat(modalAmount.value);
+        if (isNaN(amount) || amount <= 0) {
+            modalCalcHint.innerText = '💰 输入预付金额后，自动计算预计时长';
+            return;
+        }
+        const config = getCurrentConfig();
+        if (!config.rateObj) {
+            modalCalcHint.innerText = '⚠️ 费率格式错误，请检查费率 (例如 20/小时)';
+            return;
+        }
+        let durationMs = calcDurationMs(config.rateObj, amount);
+        let totalMinutes = durationMs / (60 * 1000);
+        if (totalMinutes <= 0) {
+            modalCalcHint.innerText = '⚠️ 金额不足最小单位，无法计时';
+            return;
+        }
+        if (totalMinutes >= 60) {
+            let hours = Math.floor(totalMinutes / 60);
+            let mins = (totalMinutes % 60).toFixed(0);
+            modalCalcHint.innerText = `⏱️ 预计时长: ${hours}小时${mins}分钟 (共${totalMinutes.toFixed(1)}分钟)`;
+        } else {
+            modalCalcHint.innerText = `⏱️ 预计时长: ${totalMinutes.toFixed(1)} 分钟`;
+        }
+    }
+
+    // 持久化
+    function persistOrders() {
+        localStorage.setItem('timer_orders', JSON.stringify(orders));
+    }
+
+    function loadOrdersFromStorage() {
+        const stored = localStorage.getItem('timer_orders');
+        if (stored) {
+            try {
+                let parsed = JSON.parse(stored);
+                orders = parsed.filter(o => o && typeof o.endTime === 'number');
+                // 确保每个订单都有description字段（兼容旧数据）
+                orders.forEach(o => { if (o.description === undefined) o.description = ''; });
+            } catch(e) { orders = []; }
+        } else {
+            orders = [];
+        }
+    }
+
+    // 渲染订单列表
+    function renderOrders() {
+        if (!orderTableBody) return;
+        if (!orders.length) {
+            orderTableBody.innerHTML = '<tr class="empty-row"><td colspan="6">✨ 暂无订单，点击上方按钮添加订单 ✨</td></tr>';
+            return;
+        }
+        const now = Date.now();
+        let html = '';
+        for (let i = 0; i < orders.length; i++) {
+            const order = orders[i];
+            const remainMs = order.endTime - now;
+            let remainText = '';
+            let isUrgent = false;
+            if (remainMs <= 0) {
+                remainText = '⏰ 已到期待处理';
+                isUrgent = true;
+            } else {
+                const totalSeconds = Math.floor(remainMs / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                if (hours > 0) {
+                    remainText = `${hours}小时${minutes}分${seconds}秒`;
+                } else if (minutes > 0) {
+                    remainText = `${minutes}分${seconds}秒`;
+                } else {
+                    remainText = `${seconds}秒`;
+                }
+                if (totalSeconds <= 300 && totalSeconds > 0) isUrgent = true;
+            }
+            const shopServiceStr = `${order.shopName || '?'} / ${order.serviceType || '?'}`;
+            const rateSnapshot = order.rateSnapshot || '—';
+            const amountPaid = order.amountPaid ? order.amountPaid.toFixed(2) : '0';
+            // 如果有备注显示小图标
+            const hasDesc = order.description && order.description.trim() !== '';
+            const descIcon = hasDesc ? ' 📝' : '';
+            html += `<tr>
+                        <td style="font-weight:600;">${escapeHtml(order.orderNumber)}${descIcon}</td>
+                        <td><span class="badge-service">${escapeHtml(shopServiceStr)}</span></td>
+                        <td>¥ ${amountPaid}</td>
+                        <td style="font-size:0.8rem;">${escapeHtml(rateSnapshot)}</td>
+                        <td class="remaining-time">${isUrgent ? '<span class="time-urgent">⏳ '+remainText+'</span>' : remainText}</td>
+                        <td class="action-buttons">
+                            <button class="action-btn detail-btn" data-id="${order.id}" title="查看/编辑备注">📋 详情</button>
+                            <button class="action-btn delete-btn" data-id="${order.id}" title="结束订单">🗑️ 结束</button>
+                        </td>
+                      </tr>`;
+        }
+        orderTableBody.innerHTML = html;
+        // 绑定详情按钮事件
+        document.querySelectorAll('.detail-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                if (id) openDetailModal(id);
+                e.stopPropagation();
+            });
+        });
+        // 绑定删除按钮
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                if (id) deleteOrderById(id);
+                e.stopPropagation();
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function deleteOrderById(id) {
+        const idx = orders.findIndex(o => o.id === id);
+        if (idx !== -1) {
+            orders.splice(idx, 1);
+            persistOrders();
+            renderOrders();
+        }
+    }
+
+    // 打开详情模态框，显示订单信息并加载描述
+    function openDetailModal(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+        currentDetailOrderId = orderId;
+        // 填充订单基本信息
+        const remainMs = order.endTime - Date.now();
+        let remainText = '';
+        if (remainMs <= 0) remainText = '已过期';
+        else {
+            const minutes = Math.floor(remainMs / (60 * 1000));
+            const seconds = Math.floor((remainMs % (60 * 1000)) / 1000);
+            remainText = `${minutes}分${seconds}秒`;
+        }
+        const infoHtml = `
+            <div class="info-line"><strong>🔖 订单编号：</strong> ${escapeHtml(order.orderNumber)}</div>
+            <div class="info-line"><strong>🏢 店铺/服务：</strong> ${escapeHtml(order.shopName)} / ${escapeHtml(order.serviceType)}</div>
+            <div class="info-line"><strong>💰 预付金额：</strong> ¥ ${order.amountPaid.toFixed(2)}</div>
+            <div class="info-line"><strong>⏱️ 费率快照：</strong> ${escapeHtml(order.rateSnapshot)}</div>
+            <div class="info-line"><strong>⌛ 剩余时间：</strong> ${remainText}</div>
+        `;
+        detailContent.innerHTML = infoHtml;
+        detailDescription.value = order.description || '';
+        detailModal.classList.add('active');
+    }
+
+    // 保存描述到订单
+    function saveOrderDescription() {
+        if (!currentDetailOrderId) return;
+        const order = orders.find(o => o.id === currentDetailOrderId);
+        if (order) {
+            order.description = detailDescription.value.trim();
+            persistOrders();
+            renderOrders();  // 刷新列表，显示备注图标变化
+            // 可选提示
+            alert('备注已保存 ✓');
+            closeDetailModal();
+        }
+    }
+
+    function closeDetailModal() {
+        detailModal.classList.remove('active');
+        currentDetailOrderId = null;
+    }
+
+    // 处理到期订单 (带描述展示)
+    function handleExpiredOrders() {
+        let hasExpired = false;
+        while (true) {
+            const now = Date.now();
+            const expiredIndex = orders.findIndex(order => order.endTime <= now);
+            if (expiredIndex === -1) break;
+            const expiredOrder = orders[expiredIndex];
+            orders.splice(expiredIndex, 1);
+            persistOrders();
+            renderOrders();
+            // 构建提醒消息，包含备注描述
+            let msg = `⏰ 订单计时已到！\n\n订单编号：${expiredOrder.orderNumber}\n店铺：${expiredOrder.shopName}\n服务：${expiredOrder.serviceType}\n预付金额：¥${expiredOrder.amountPaid.toFixed(2)}`;
+            if (expiredOrder.description && expiredOrder.description.trim() !== '') {
+                msg += `\n📝 备注：${expiredOrder.description.trim()}`;
+            }
+            msg += `\n\n点击确定移除该订单。`;
+            confirm(msg);
+            hasExpired = true;
+        }
+        if (hasExpired) renderOrders();
+    }
+
+    // 定时刷新
+    function tickTimer() {
+        renderOrders();
+        handleExpiredOrders();
+    }
+
+    function startGlobalTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => tickTimer(), 1000);
+    }
+
+    // 添加订单 (支持描述)
+    function addOrderFromModal() {
+        let orderNumber = modalOrderId.value.trim();
+        const amountPaid = parseFloat(modalAmount.value);
+        const description = modalDescription.value.trim();
+        if (!orderNumber) {
+            alert('请填写订单编号 (唯一标识)');
+            return false;
+        }
+        if (isNaN(amountPaid) || amountPaid <= 0) {
+            alert('请输入有效的支付金额 (大于0)');
+            return false;
+        }
+        const exists = orders.some(o => o.orderNumber === orderNumber);
+        if (exists) {
+            alert(`订单编号“${orderNumber}”已存在，请使用不同的编号`);
+            return false;
+        }
+        const config = getCurrentConfig();
+        if (!config.rateObj) {
+            alert(`费率格式错误: "${config.rateRaw}" 请使用例如 "20/小时" 或 "5/分钟"`);
+            return false;
+        }
+        const durationMs = calcDurationMs(config.rateObj, amountPaid);
+        if (durationMs <= 0) {
+            alert(`支付金额 ${amountPaid} 不足以产生任何计时，请增加金额或调整费率。`);
+            return false;
+        }
+        const endTime = Date.now() + durationMs;
+        const newOrder = {
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+            orderNumber: orderNumber,
+            shopName: config.shop,
+            serviceType: config.service,
+            amountPaid: amountPaid,
+            rateSnapshot: config.rateRaw,
+            endTime: endTime,
+            description: description,
+            createdAt: Date.now()
+        };
+        orders.push(newOrder);
+        persistOrders();
+        renderOrders();
+        // 清空模态框
+        modalOrderId.value = '';
+        modalAmount.value = '';
+        modalDescription.value = '';
+        modalCalcHint.innerText = '💰 输入预付金额后，自动计算预计时长';
+        return true;
+    }
+
+    // 模态框控制
+    function openAddModal() {
+        modalOrderId.value = '';
+        modalAmount.value = '';
+        modalDescription.value = '';
+        updateModalHint();
+        orderModal.classList.add('active');
+    }
+    function closeAddModal() {
+        orderModal.classList.remove('active');
+    }
+
+    // 绑定事件
+    function bindEvents() {
+        rateInput.addEventListener('input', () => {
+            updateRatePreview();
+            if (orderModal.classList.contains('active')) updateModalHint();
+        });
+        shopNameInput.addEventListener('input', () => { if (orderModal.classList.contains('active')) updateModalHint(); });
+        modalAmount.addEventListener('input', () => { if (orderModal.classList.contains('active')) updateModalHint(); });
+        openModalBtn.addEventListener('click', openAddModal);
+        closeModalBtn.addEventListener('click', closeAddModal);
+        confirmOrderBtn.addEventListener('click', () => {
+            const success = addOrderFromModal();
+            if (success) {
+                closeAddModal();
+                tickTimer();
+            }
+        });
+        orderModal.addEventListener('click', (e) => { if (e.target === orderModal) closeAddModal(); });
+        // 详情模态框事件
+        closeDetailModalBtn.addEventListener('click', closeDetailModal);
+        saveDetailBtn.addEventListener('click', saveOrderDescription);
+        detailModal.addEventListener('click', (e) => { if (e.target === detailModal) closeDetailModal(); });
+    }
+
+    // 初始化过期检查
+    function initExpiredCheckOnLoad() {
+        handleExpiredOrders(); // 加载后处理已到期订单
+        renderOrders();
+    }
+
+    function init() {
+        loadOrdersFromStorage();
+        updateRatePreview();
+        bindEvents();
+        startGlobalTimer();
+        initExpiredCheckOnLoad();
+    }
+
+    init();
+</script>
+</body>
+</html>
